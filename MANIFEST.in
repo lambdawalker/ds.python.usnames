@@ -1,0 +1,4 @@
+include README.md
+recursive-include tests *.py
+recursive-include examples *.json *.jsonl *.txt
+recursive-include docs *.md

@@ -152,3 +152,7 @@ Unit tests use tiny schema-2 fixtures and require no network. CI also downloads 
 The producer owns [the schema contract](https://github.com/lambdawalker/ds.source.usnames/blob/main/docs/dataset-contract.md). Incompatible schema changes must use a new SQLite `user_version` and a compatible consumer release. The consumer fails clearly on unsupported schemas. Source URLs, original checksums, source years and dataset statistics are stored in SQLite metadata and the release manifest.
 
 Use `python -m us_names info --db data/names.sqlite` to inspect a downloaded dataset. `python -m us_names export --output tokens.jsonl.gz` exports its token records (annual observations remain in SQLite).
+
+## Publishing the library
+
+See [PyPI publishing setup](docs/publishing.md) for the exact one-time Trusted Publisher settings and release steps. Publishing a GitHub release with a matching version tag (initially `v0.3.0`) builds and uploads the Python wheel and source distribution to PyPI. No long-lived API token is required. The package's PyPI name is `us-synthetic-names`; the SQLite dataset remains in the source repository's GitHub Releases.
