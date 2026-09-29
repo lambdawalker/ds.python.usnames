@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "us-synthetic-names"
+version = "0.3.0"
+description = "Generate US synthetic names from versioned government-derived dataset releases"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["regex>=2024.0"]
+
+[project.urls]
+Repository = "https://github.com/lambdawalker/ds.python.usnames"
+Dataset = "https://github.com/lambdawalker/ds.source.usnames/releases"
+
+[project.scripts]
+us-names = "us_names.cli:main"
+us-names-download = "us_names.download:main"
+
+[tool.setuptools.packages.find]
+include = ["us_names*"]
