@@ -1,4 +1,4 @@
-name: Build and publish Python package
+name: Release and publish Python package
 
 on:
   push:
@@ -16,10 +16,35 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  release:
+    name: Prepare release PR or create merged release
+    if: github.repository == 'lambdawalker/ds.python.usnames' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      created: ${{ steps.release.outputs.release_created }}
+      tag: ${{ steps.release.outputs.tag_name }}
+      sha: ${{ steps.release.outputs.sha }}
+      pr: ${{ steps.release.outputs.pr }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
   build:
+    needs: release
+    if: always() && !cancelled() && (needs.release.result == 'success' || needs.release.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Validate the generated PR as well: bot-created PRs do not trigger CI.
+          ref: ${{ needs.release.outputs.sha || fromJSON(needs.release.outputs.pr || '{}').headBranchName || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -30,7 +55,7 @@ jobs:
       - name: Check versions and release tag
         env:
           EVENT_NAME: ${{ github.event_name }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_TAG: ${{ needs.release.outputs.tag || github.event.release.tag_name }}
         run: |
           python - <<'PY'
           import os
@@ -38,9 +63,13 @@ jobs:
           from pathlib import Path
           from us_names.core import VERSION
           project = tomllib.loads(Path('pyproject.toml').read_text())['project']
+          lock = tomllib.loads(Path('uv.lock').read_text())
+          locked = next(p['version'] for p in lock['package'] if p['name'] == project['name'])
+          if locked != project['version']:
+              raise SystemExit('uv.lock project version must match pyproject.toml')
           if project['version'] != VERSION:
               raise SystemExit('pyproject.toml version and generator VERSION must match')
-          if os.environ['EVENT_NAME'] == 'release':
+          if os.environ['RELEASE_TAG']:
               expected = 'v' + project['version']
               if os.environ['RELEASE_TAG'] != expected:
                   raise SystemExit(f'Release tag must be {expected}')
@@ -65,8 +94,8 @@ jobs:
 
   publish:
     name: Publish to PyPI
-    if: github.event_name == 'release' && github.repository == 'lambdawalker/ds.python.usnames'
-    needs: build
+    if: always() && needs.build.result == 'success' && github.repository == 'lambdawalker/ds.python.usnames' && (needs.release.outputs.created == 'true' || github.event_name == 'release')
+    needs: [release, build]
     runs-on: ubuntu-latest
     environment:
       name: pypi

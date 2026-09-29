@@ -155,4 +155,6 @@ Use `python -m us_names info --db data/names.sqlite` to inspect a downloaded dat
 
 ## Publishing the library
 
-See [PyPI publishing setup](docs/publishing.md) for the exact one-time Trusted Publisher settings and release steps. Publishing a GitHub release with a matching version tag (initially `v0.3.0`) builds and uploads the Python wheel and source distribution to PyPI. No long-lived API token is required. The package's PyPI name is `us-synthetic-names`; the SQLite dataset remains in the source repository's GitHub Releases.
+Releases are managed by Release Please. Merge changes into `main` using Conventional Commit titles (`feat:`, `fix:`, or `feat!:` for breaking changes). Automation opens or updates a release PR containing the version bump and changelog. Review its build run, then merge that PR to create the GitHub release and publish the package to PyPI.
+
+See [publishing setup and release operations](docs/publishing.md). PyPI trust still uses `publish.yml` and environment `pypi`; no extra token is needed. The package name is `us-synthetic-names`, and its database remains in the source repository's GitHub Releases.

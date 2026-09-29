@@ -11,7 +11,7 @@ from functools import lru_cache
 from pathlib import Path
 import regex
 
-VERSION = '0.3.0'
+VERSION = '0.3.0'  # x-release-please-version
 GROUPS = ('white', 'black', 'aian', 'asian_nhpi', 'multiracial', 'hispanic')
 FORMATS = {
     'given': '{given}', 'surname': '{surname}', 'name': '{given} {surname}',
